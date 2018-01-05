@@ -1,12 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { SpeechRecognitionService } from '../speech-recognition.service';
 import * as $ from 'jquery';
+import { HomeService } from './home.service';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
-  providers: [SpeechRecognitionService]
+  providers: [SpeechRecognitionService,HomeService]
 })
 export class HomeComponent implements OnInit, OnDestroy {
   showSearchButton: boolean;
@@ -14,7 +15,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   instructions: any = '';
   notesList: any;
   noteHead: string = "";
-  constructor(private speechRecognitionService: SpeechRecognitionService) {
+  summarisedNotes: any ={};
+  hasSummary: any = [];
+  constructor(private speechRecognitionService: SpeechRecognitionService,private homeService :HomeService) {
 
   }
 
@@ -99,6 +102,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           date: key.split('-')[2],
           content: localStorage.getItem(localStorage.key(i))
         });
+        this.hasSummary.push(false);
       } 
     }
     return notes;
@@ -143,6 +147,29 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   downloadFile(index, content) {
     window.open("data:application/txt," + encodeURIComponent(content), "_self");
+  }
+
+  summariseNotes(note,index){
+    var data = {
+      title : note.heading,
+      content : note.content
+    }
+
+    var data1 = new Object();
+    data1['title'] = note.heading;
+    data1['content'] = note.content;
+    this.homeService.summariseNote(data).subscribe(
+      (response) => {
+        console.log('Response -> ', response);
+        this.summarisedNotes['title'] = response.title;
+        this.summarisedNotes['content'] = response.content;
+        this.hasSummary[index] = true;
+      },
+      (error) => {
+        console.log('Error -> ', error);
+      }
+    );
+    
   }
 
 }

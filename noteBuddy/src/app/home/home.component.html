@@ -33,9 +33,27 @@
           <a href="" class="delete-note" title="Delete" (click) = "deleteNote(note.date);">Delete</a>
           <span class="read-note" id="read-label-{{i}}" (click)="readNotes(i)">Read</span>
           <img src="../../assets/download.svg" class="download-icon" (click)="downloadFile(i, note.content)" width="25">
+          <span class="read-note" (click)="summariseNotes(note,i);">Summarise</span>
+          <span *ngIf="hasSummary[i]" class="read-note" data-toggle="modal" data-target="#summaryModal" (click)="hasSummary[i]=false">Show Summary</span>
         </p>
         <p class="content" id="notes-{{i}}">{{note.content}}</p>
       </li>
     </ul>
+  </div>
+  <div class="modal fade" id="summaryModal" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">{{summarisedNotes.title}}</h4>
+        </div>
+        <div class="modal-body">
+          <p>{{summarisedNotes.content}}</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div> 
+    </div>
   </div>
 </div>
