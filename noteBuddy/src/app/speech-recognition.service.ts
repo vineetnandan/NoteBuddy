@@ -1,4 +1,4 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable, NgZone, EventEmitter } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 import * as _ from "lodash";
 
@@ -13,6 +13,9 @@ export class SpeechRecognitionService {
     data:any = "";
     lineNumber:any = 1;
     webkitSpeechRecognition : IWindow = <IWindow>window;
+    fireStart: EventEmitter<any> = new EventEmitter();
+    fireEnd: EventEmitter<any> = new EventEmitter();
+    fireError: EventEmitter<any> = new EventEmitter();
 
     constructor(private zone: NgZone) {
     }
@@ -52,14 +55,19 @@ export class SpeechRecognitionService {
 
             this.speechRecognition.onerror = error => {
                 observer.error(error);
+                if(error.error == 'no-speech') {
+                    this.fireError.emit({});
+                };
             };
 
             this.speechRecognition.onend = () => {
                 console.log("ended");
+                this.fireEnd.emit({});
                 observer.complete();
             };
 
             this.speechRecognition.start();
+            this.fireStart.emit({});
             console.log("Say something - We are listening !!!");
         });
     }

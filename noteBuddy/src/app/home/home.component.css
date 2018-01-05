@@ -1,0 +1,17 @@
+.read-note {
+    text-decoration: none;
+    margin-left: 15px;
+    color: rgb(255, 99, 71);
+    cursor: pointer;
+}
+
+.content {
+    display: none;
+}
+
+.download-icon {
+    cursor: pointer;
+    margin-left: 15px;
+    position: relative;
+    bottom: 5px;
+}

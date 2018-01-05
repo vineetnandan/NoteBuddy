@@ -61,6 +61,7 @@ button:focus {
     font-size: 0.9em;
     color: #888;
     margin-bottom: 10px;
+    text-align: left;
 }
 
 .note .delete-note,
@@ -71,6 +72,16 @@ button:focus {
 
 .note .content {
     margin-bottom: 40px;
+}
+
+.note-heading{
+    text-align: left;
+    font-size: 12pt;
+    margin-top: 15px;
+}
+
+.noteBuddy-margin-right-small{
+    margin-right:10px;
 }
 
 @media (max-width: 768px) {

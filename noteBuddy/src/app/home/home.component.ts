@@ -13,13 +13,28 @@ export class HomeComponent implements OnInit, OnDestroy {
   speechData: any = '';
   instructions: any = '';
   notesList: any;
+  noteHead: string = "";
   constructor(private speechRecognitionService: SpeechRecognitionService) {
 
   }
 
   ngOnInit() {
-    var notes = this.getAllNotes();
-    this.renderNotes(notes);
+    this.getAllUpdatedNotes();
+
+    var instructions = document.getElementById("recording-instructions");
+    this.speechRecognitionService.fireStart.subscribe((response) => {
+      instructions.innerHTML = 'Voice recognition activated. Try speaking into the microphone.';
+    });
+
+    this.speechRecognitionService.fireEnd.subscribe((response) => {
+      instructions.innerHTML = 'You were quiet for a while so voice recognition turned itself off.';
+    });
+
+    this.speechRecognitionService.fireError.subscribe((response) => {
+      instructions.innerHTML = 'No speech was detected. Try again.';
+    });
+
+
   }
 
   ngOnDestroy() {
@@ -50,6 +65,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   onPause(){
     this.speechRecognitionService.speechRecognition.stop();
+    document.getElementById("recording-instructions").innerHTML = 'Voice recognition paused.';
   }
 
   saveNote(){
@@ -58,19 +74,17 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.instructions ='Empty Note!! Please add content to your note.';
     }
     else {
-      // Save note to localStorage.
-      // The key is the dateTime with seconds, the value is the content of the note.
       this.saveToLocalStorage(new Date().toLocaleString(), this.speechData);
-  
       // Reset variables and update UI.
       this.speechData = '';
-      //renderNotes(getAllNotes());
       this.instructions = 'Note saved successfully.';
+      this.getAllUpdatedNotes();
     }
   }
 
   saveToLocalStorage(dateTime, content) {
-    localStorage.setItem('note-' + dateTime, content);
+    localStorage.setItem('note-' + this.noteHead + '-' + dateTime, content);
+    this.noteHead = '';
   }
 
   getAllNotes() {
@@ -81,7 +95,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   
       if(key.substring(0,5) == 'note-') {
         notes.push({
-          date: key.replace('note-',''),
+          heading : key.split('-')[1],
+          date: key.split('-')[2],
           content: localStorage.getItem(localStorage.key(i))
         });
       } 
@@ -90,26 +105,44 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   renderNotes(notes) {
-    // var html = '';
-    // if(notes.length) {
-    //   console.log("hi",notes);
-    //   notes.forEach(function(note) {
-    //     html+= `<li class="note">
-    //       <p class="header">
-    //         <span class="date">${note.date}</span>
-    //         <a href="#" class="listen-note" title="Listen to Note">Listen to Note</a>
-    //         <a href="#" class="delete-note" title="Delete">Delete</a>
-    //       </p>
-    //       <p class="content">${note.content}</p>
-    //     </li>`;    
-    //   });
-    // }
-    // else {
-    //   console.log("ho");
-    //   html = '<li><p class="content">You don\'t have any notes yet.</p></li>';
-    // }
-    // this.notesList.html(html);
     this.notesList = notes;
+    console.log("notes",this.notesList);
+  }
+
+  getAllUpdatedNotes(){
+    var notes = this.getAllNotes();
+    this.renderNotes(notes);
+  }
+
+  readNotes(index) {
+    if(document.getElementById('read-label-'+index).innerHTML == 'Read') {
+      document.getElementById('read-label-'+index).innerHTML = 'Hide';
+      document.getElementById('notes-'+index).style.display = 'block';
+    } else {
+      document.getElementById('read-label-'+index).innerHTML = 'Read';
+      document.getElementById('notes-'+index).style.display = 'none';
+    }
+  }
+
+  readOut(message) {
+    var speech = new SpeechSynthesisUtterance();
+
+    // Speech setups
+    speech.text = message;
+    speech.volume = 1;
+    speech.rate = 0.85;
+    speech.pitch = 1;
+    
+    window.speechSynthesis.speak(speech);
+  }
+
+  deleteNote(timestamp){
+    localStorage.removeItem('note-'+timestamp);
+    this.getAllUpdatedNotes();
+  }
+
+  downloadFile(index, content) {
+    window.open("data:application/txt," + encodeURIComponent(content), "_self");
   }
 
 }
