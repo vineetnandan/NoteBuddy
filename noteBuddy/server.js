@@ -3,6 +3,11 @@ var app = express();
 var bodyParser = require("body-parser");
 var path = require("path");
 var SummaryTool = require("node-summary");
+var wikipedia = require("node-wikipedia");
+var apiai = require('apiai');
+var say = require('say');
+
+var appApi = apiai("cf798e34d2d8486a99ad5f06e55ef850");
 
 // Create application/x-www-form-urlencoded parser
 var urlencodedParser = bodyParser.urlencoded({ extended: true });
@@ -44,7 +49,6 @@ app.post("/summariseNote", function(req, res) {
         summaryRatio:
           100 - 100 * (result.length / (title.length + content.length))
       };
-      console.log(response);
       res.end(JSON.stringify(response));
     },
     error => {
@@ -59,12 +63,44 @@ app.post("/summariseNote", function(req, res) {
   );
 });
 
+app.post("/reviseChat", function(req,res){
+  let input = req.body.question;
+  responseFromAlexa(input).then(result =>{
+    let response = {
+      answer : result
+    }
+    res.end(JSON.stringify(response));
+  },error =>{
+    console.log(error);
+    res.end(JSON.stringify({
+      error: error,
+      message: "error in replying to the query"
+    }));
+  });
+});
+
+app.post("/addIntent", function(req,res){
+  let options = req.body;
+  createIntent(options).then(result=>{
+    let response = {
+      message : result
+    }
+    res.end(JSON.stringify(response));
+  },error =>{
+    console.log(error);
+    res.end(JSON.stringify({
+      error: error,
+      message: "error in adding intent"
+    }));
+  })
+})
+
 var summariseContent = function(title, content) {
   return new Promise((resolve, reject) => {
     SummaryTool.summarize(title, content, function(err, summary) {
       if (err) {
         reject(err);
-        console.log("Something went wrong man!");
+        console.log("Something went wrong man!",err);
       } else {
         console.log(summary);
         console.log("Original Length " + (title.length + content.length));
@@ -78,6 +114,44 @@ var summariseContent = function(title, content) {
     });
   });
 };
+
+/*>>>>>>>>>>>>>>>>>>>Api.ai>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+
+var responseFromAlexa = function (input) {
+  return new Promise((resolve,reject) =>{
+    var request = appApi.textRequest(input, {
+      sessionId: '124'
+    });
+    request.on('response', function (response) {
+        console.log(response);
+        resolve(response.result.fulfillment.speech);
+      //  say.speak(response.result.fulfillment.speech, 'Alex', 1.5, (err) => {
+      //      if (err) {
+      //          return console.error(err);
+      //      }
+
+      //      console.log('Text has been spoken.');
+      //  });
+    });
+
+    request.on('error', function (error) {
+        console.log(error);
+        reject(error);
+    });
+    request.end();
+  })
+}
+
+function createIntent(options) {
+  return new Promise((resolve, reject) => {
+    let request = appApi.intentPostRequest(options);
+    request.on('response', function (response) { return resolve(response); });
+    request.on('error', (error) => { return reject(error); });
+    request.end();
+  })
+}
+
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
 
 var server = app.listen(3000, function() {
   var host = server.address().address;

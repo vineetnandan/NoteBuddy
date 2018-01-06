@@ -16,5 +16,9 @@ export class HomeService {
       console.log("data",data);
     return this.httpService.post("summariseNote", data);
   }
+
+  askQuestion(data){
+    return this.httpService.post("reviseChat", data);
+  }
   
 }

@@ -17,6 +17,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   noteHead: string = "";
   summarisedNotes: any ={};
   hasSummary: any = [];
+  showChatScreen:boolean= false;
+  answer:any =  "";
+  question:any =  "";
   constructor(private speechRecognitionService: SpeechRecognitionService,private homeService :HomeService) {
 
   }
@@ -140,8 +143,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     window.speechSynthesis.speak(speech);
   }
 
-  deleteNote(timestamp){
-    localStorage.removeItem('note-'+timestamp);
+  deleteNote(heading,timestamp){
+    localStorage.removeItem('note-' + heading + '-' + timestamp);
     this.getAllUpdatedNotes();
   }
 
@@ -170,6 +173,19 @@ export class HomeComponent implements OnInit, OnDestroy {
       }
     );
     
+  }
+
+  askQuestion(){
+    if(this.question){
+      let data = {
+        question : this.question
+      }
+      this.homeService.askQuestion(data).subscribe((response) =>{
+        this.answer = response.answer;
+      }, (error) =>{
+        console.log('Error -> ', error);
+      })
+    }
   }
 
 }

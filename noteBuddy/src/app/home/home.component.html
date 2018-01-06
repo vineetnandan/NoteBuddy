@@ -1,44 +1,63 @@
-<div class="container">
-
-  <h1>Note Buddy</h1>
+<div class="content-area">
+  <h1 style="text-align:center">Note Buddy</h1>
   <h3 class="no-browser-support">Sorry, Your Browser Doesn't Support the Web Speech API. Try Opening This Demo In Google Chrome.</h3>
 
-  <div class="app">
-    <h3>Add New Note</h3>
-    <div class="note-heading input-single">
-      <input name="note-heading" [(ngModel)]="noteHead" placeholder="Note Heading (required)">
+  <div class="row">
+    <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
+        <h3 class="newNoteHeading" style="text-align:center">New Note</h3>
+        <div class="note-heading input-single">
+            <input name="note-heading" class="heading-input" [(ngModel)]="noteHead" placeholder="Note Heading (required)">
+        </div>
+        <div class="input-single">
+          <textarea id="note-textarea" name="note-textArea" placeholder="Create a new note by typing or using voice recognition." rows="8" [(ngModel)]='speechData'></textarea>
+        </div>
+
+        <img id="start-record-btn" (click)="onRecognise();" class="start-stop" src="../../assets/play.svg" width="30">
+        <img id="pause-record-btn" (click) = "onPause();" class="start-stop" src="../../assets/pause.svg" width="30">
+        <button id="save-note-btn" title="Save Note" (click) = "saveNote();" [disabled]="!noteHead" class="buttons">Save</button>
+        <i class="recording-instructions">
+          <p id="recording-instructions">Press the
+            <strong>Start Recognition</strong> button and allow access.</p>
+          <p>
+            {{instructions}}
+          </p>
+        </i>
     </div>
-    <div class="input-single">
-      <textarea id="note-textarea" name="note-textArea" placeholder="Create a new note by typing or using voice recognition." rows="6" [(ngModel)]='speechData'></textarea>
+    
+    <div class="col-lg-7 col-md-7 col-sm-12 col-xs-12">
+        <h3 style="text-align:center">Saved Notes</h3>
+        <ul id="notes">
+          <li *ngIf = "notesList && notesList.length && notesList.length == 0">
+            <p class="no-notes">You don't have any notes.</p>
+          </li>
+          <li class="note" *ngFor="let note of notesList; let i = index;">
+            <p class="header">
+              <span>{{i+1}}&nbsp;&nbsp;</span>
+              <span class="date noteBuddy-margin-right-small">{{note.heading}}</span>
+              <span class="date">{{note.date}}</span>
+              <a href="" class="listen-note" title="Listen to Note" (click)="readOut(note.content);">Listen to Note</a>
+              <a href="" class="delete-note" title="Delete" (click) = "deleteNote(note.heading,note.date);">Delete</a>
+              <span class="read-note" id="read-label-{{i}}" (click)="readNotes(i)">Read</span>
+              <img src="../../assets/download.svg" class="download-icon" (click)="downloadFile(i, note.content)" width="25">
+              <span *ngIf="note.content.length>500" class="read-note" (click)="summariseNotes(note,i);">Summarise</span>
+              <span *ngIf="hasSummary[i]" class="read-note" data-toggle="modal" data-target="#summaryModal" (click)="hasSummary[i]=false">Show Summary</span>
+            </p>
+            <p class="content" id="notes-{{i}}">{{note.content}}</p>
+          </li>
+        </ul>
     </div>
-    <button id="start-record-btn" title="Start Recording" (click)="onRecognise();">Start Recognition</button>
-    <button id="pause-record-btn" title="Pause Recording" (click) = "onPause();">Pause Recognition</button>
-    <button id="save-note-btn" title="Save Note" (click) = "saveNote();" [disabled]="!noteHead">Save Note</button>
-    <p id="recording-instructions">Press the
-      <strong>Start Recognition</strong> button and allow access.</p>
-    <p>
-      {{instructions}}
-    </p>
-    <h3>My Notes</h3>
-    <ul id="notes">
-      <li *ngIf = "notesList && notesList.length && notesList.length == 0">
-        <p class="no-notes">You don't have any notes.</p>
-      </li>
-      <li class="note" *ngFor="let note of notesList; let i = index;">
-        <p class="header">
-          <span>{{i+1}}&nbsp;&nbsp;</span>
-          <span class="date noteBuddy-margin-right-small">{{note.heading}}</span>
-          <span class="date">{{note.date}}</span>
-          <a href="" class="listen-note" title="Listen to Note" (click)="readOut(note.content);">Listen to Note</a>
-          <a href="" class="delete-note" title="Delete" (click) = "deleteNote(note.date);">Delete</a>
-          <span class="read-note" id="read-label-{{i}}" (click)="readNotes(i)">Read</span>
-          <img src="../../assets/download.svg" class="download-icon" (click)="downloadFile(i, note.content)" width="25">
-          <span class="read-note" (click)="summariseNotes(note,i);">Summarise</span>
-          <span *ngIf="hasSummary[i]" class="read-note" data-toggle="modal" data-target="#summaryModal" (click)="hasSummary[i]=false">Show Summary</span>
-        </p>
-        <p class="content" id="notes-{{i}}">{{note.content}}</p>
-      </li>
-    </ul>
+    
+  </div>
+  <div>
+    <div style="text-align:center" *ngIf="!showChatScreen">
+      <button class="btn btn-primary" style="height:50px; font-size:14pt;" (click)="showChatScreen = true">Revise Topics</button>
+    </div>
+    <div *ngIf= "showChatScreen">
+      <input name="question-input" [(ngModel)]="question" style="width:40%;" placeholder="Enter Text/Question">
+      <button class="btn btn-primary btn-sm" style="height:30px; font-size:10pt;" (click)="askQuestion();">Ask</button>
+      <textarea name="response-area" [(ngModel)] = "answer" rows= "6" style="width: 40%; margin:10px 0px"></textarea>
+      <button class="btn btn-primary" style="height:30px; font-size:10pt;" (click)="showChatScreen=false;question='';answer='';">close</button>
+    </div>
   </div>
   <div class="modal fade" id="summaryModal" role="dialog">
     <div class="modal-dialog">
@@ -49,9 +68,6 @@
         </div>
         <div class="modal-body">
           <p>{{summarisedNotes.content}}</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         </div>
       </div> 
     </div>

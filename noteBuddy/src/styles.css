@@ -84,6 +84,7 @@ button:focus {
     margin-right:10px;
 }
 
+
 @media (max-width: 768px) {
     .container {
         padding: 50px 25px;
