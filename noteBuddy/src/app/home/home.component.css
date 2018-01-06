@@ -69,5 +69,20 @@ width: 100%;
 }
 
 .content-area{
-    padding: 30px;
+    padding: 30px 30px 60px;
+}
+
+.revision {
+  transform: translate(20%,20%);
+  margin: 0 auto;
+  width: 70%;
+}
+
+.content-area {
+    background-image: url(../../assets/Wall.png);
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    min-height: 100vh;
 }

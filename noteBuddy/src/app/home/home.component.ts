@@ -188,4 +188,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  downloadSummary(notes) {
+    window.open("data:application/txt," + encodeURIComponent(notes.content), "_self");
+  }
+
 }
